@@ -1,0 +1,14 @@
+node_modules/
+dist/
+uploads/
+migration-backups/
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+.vercel
+.DS_Store
+coverage/
+.vscode/
+.idea/
