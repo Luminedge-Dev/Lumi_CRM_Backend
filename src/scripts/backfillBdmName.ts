@@ -4,7 +4,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { parse } from 'csv-parse/sync';
 import Lead from '../models/Lead';
-import { canonicalizePhoneValue } from '../utils/phone.util';
+import { canonicalizePhoneValue } from '../shared/utils/phone';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ function loadPhoneToBdmName(): Map<string, string> {
 }
 
 async function run() {
+  assertScriptSafe('backfillBdmName', { uri: MONGODB_URI, writes: COMMIT });
   await mongoose.connect(MONGODB_URI);
   console.log(`Connected to MongoDB${COMMIT ? ' (COMMIT MODE)' : ' (dry run — no writes)'}`);
 

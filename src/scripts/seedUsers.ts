@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ const users = [
 
 const seedUsers = async () => {
     try {
+        assertScriptSafe('seedUsers', { uri: MONGODB_URI, writes: true });
         await mongoose.connect(MONGODB_URI);
         console.log('Connected to MongoDB');
 

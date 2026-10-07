@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Lead from '../models/Lead';
 import User from '../models/User';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -93,6 +94,7 @@ const leadsData = [
 
 const seedLeads = async () => {
     try {
+        assertScriptSafe('seedLeads', { uri: MONGODB_URI, writes: true });
         await mongoose.connect(MONGODB_URI);
         console.log('Connected to MongoDB');
 

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Lead from '../models/Lead';
 import User from '../models/User';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/crm_db
 const COMMIT = process.argv.includes('--commit');
 
 async function run() {
+  assertScriptSafe('unassignRahulLeads', { uri: MONGODB_URI, writes: COMMIT });
   await mongoose.connect(MONGODB_URI);
   console.log(`Connected to MongoDB${COMMIT ? ' (COMMIT MODE)' : ' (dry run — no writes)'}`);
 

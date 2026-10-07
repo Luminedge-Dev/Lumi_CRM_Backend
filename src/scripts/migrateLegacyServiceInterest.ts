@@ -2,6 +2,7 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
+import { assertScriptSafe } from './scriptGuard';
 
 // Maps legacy serviceInterest values (from before the enum was tightened) to their
 // closest current equivalent in Lead.ts's serviceInterest enum.
@@ -27,6 +28,7 @@ const isDryRun = process.argv.includes('--dry-run');
 const backupDir = path.join(__dirname, '../../migration-backups');
 
 async function main() {
+  assertScriptSafe('migrateLegacyServiceInterest', { uri: process.env.MONGODB_URI, writes: !isDryRun });
   await mongoose.connect(process.env.MONGODB_URI as string);
   const db = mongoose.connection.db!;
   const collection = db.collection('leads');
@@ -56,8 +58,7 @@ async function main() {
         return LEGACY_MAP[v];
       }
       unmappedCounts[v] = (unmappedCounts[v] || 0) + 1;
-      changed = true;
-      return v; // leave unmapped values untouched, flagged below
+      return v; // leave unmapped values untouched (no update), flagged below
     });
 
     if (!changed) continue;

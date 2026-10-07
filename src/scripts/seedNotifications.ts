@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/User';
 import Notification from '../models/Notification';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
 const seedNotifications = async () => {
     try {
+        assertScriptSafe('seedNotifications', { uri: process.env.MONGODB_URI, writes: true });
         await mongoose.connect(process.env.MONGODB_URI as string);
         console.log('Connected to MongoDB');
 

@@ -5,7 +5,8 @@ import dotenv from 'dotenv';
 import { parse } from 'csv-parse/sync';
 import Lead from '../models/Lead';
 import User from '../models/User';
-import { canonicalizePhoneValue } from '../utils/phone.util';
+import { canonicalizePhoneValue } from '../shared/utils/phone';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -122,6 +123,7 @@ function loadCsvFiles(): ParsedRow[] {
 }
 
 async function run() {
+  assertScriptSafe('importLeadsFromCsv', { uri: MONGODB_URI, writes: COMMIT });
   await mongoose.connect(MONGODB_URI);
   console.log(`Connected to MongoDB${COMMIT ? ' (COMMIT MODE)' : ' (dry run — no writes)'}`);
 

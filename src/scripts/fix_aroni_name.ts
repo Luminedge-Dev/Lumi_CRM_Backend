@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -19,6 +20,7 @@ const ARONI_USER_ID = '6a4a477e9e7f52534dfa43b2';
 
 async function fixAroniName() {
   try {
+    assertScriptSafe('fix_aroni_name', { uri: process.env.MONGODB_URI, writes: true });
     await mongoose.connect(process.env.MONGODB_URI as string);
     console.log('Connected to MongoDB');
 

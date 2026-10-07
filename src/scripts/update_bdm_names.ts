@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -24,6 +25,7 @@ const updates: Record<string, string> = {
 
 async function updateBdmNames() {
   try {
+    assertScriptSafe('update_bdm_names', { uri: process.env.MONGODB_URI, writes: true });
     await mongoose.connect(process.env.MONGODB_URI as string);
     console.log('Connected to MongoDB');
 

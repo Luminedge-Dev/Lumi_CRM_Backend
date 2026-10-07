@@ -2,12 +2,14 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import User from '../models/User';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
 const createUser = async () => {
     try {
         const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/crm_luminedge';
+        assertScriptSafe('createUser', { uri: mongoURI, writes: true });
         await mongoose.connect(mongoURI);
         console.log('Connected to MongoDB');
 

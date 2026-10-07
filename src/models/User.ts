@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { stripSensitiveAuthFields } from '../shared/utils/sensitiveFields';
+import { STAFF_ROLES } from '../shared/constants/roles';
 
 export interface IUser extends Document {
   email: string;
@@ -59,7 +61,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['admin', 'bdm'],
+      enum: STAFF_ROLES,
       default: 'bdm',
     },
     avatarUrl: {
@@ -78,6 +80,7 @@ const UserSchema = new Schema<IUser>(
   },
   {
     timestamps: true,
+    toJSON: { transform: stripSensitiveAuthFields },
   }
 );
 

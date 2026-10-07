@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { canonicalizePhoneValue } from '../utils/phone.util';
+import { canonicalizePhoneValue } from '../shared/utils/phone';
+import { LEAD_STAGES } from '../shared/constants/leadStages';
 
 export interface IFollowUp {
   date?: Date;
@@ -98,7 +99,7 @@ const LeadSchema = new Schema<ILead>(
     },
     lifecycleStage: {
       type: String,
-      enum: ['New Inquiry', 'Contacted', 'Trial Class', 'Enrolled', 'Lost'],
+      enum: LEAD_STAGES,
       default: 'New Inquiry'
     }
   },

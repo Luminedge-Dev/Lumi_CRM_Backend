@@ -5,3 +5,6 @@ dist
 npm-debug.log
 .git
 .gitignore
+# Local data that contains customer PII: never bake it into an image.
+uploads
+migration-backups

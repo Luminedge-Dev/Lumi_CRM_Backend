@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { stripSensitiveAuthFields } from '../shared/utils/sensitiveFields';
 
 interface IAcademicRecord {
   level: 'SSC' | 'HSC' | 'Diploma' | 'Bachelor' | 'Master';
@@ -130,7 +131,7 @@ const StudentSchema = new Schema<IStudent>(
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { transform: stripSensitiveAuthFields } }
 );
 
 export default mongoose.model<IStudent>('Student', StudentSchema);

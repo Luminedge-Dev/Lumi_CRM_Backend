@@ -4,6 +4,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { assertScriptSafe } from './scriptGuard';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ const migrateLeadStageNames = async () => {
     try {
         const isDryRun = process.argv.includes('--dry-run');
 
+        assertScriptSafe('migrateLeadStageNames', { uri: MONGODB_URI, writes: !isDryRun });
         await mongoose.connect(MONGODB_URI);
         console.log('Connected to MongoDB');
 

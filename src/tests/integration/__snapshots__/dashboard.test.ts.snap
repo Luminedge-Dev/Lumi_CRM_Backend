@@ -1,0 +1,342 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Admin dashboard /admin/all keeps its response shape 1`] = `
+{
+  "data": {
+    "conversionTrend": [
+      {
+        "month": "string",
+        "rate": "number",
+      },
+    ],
+    "coursePerformance": [
+      {
+        "color": "string",
+        "count": "number",
+        "label": "string",
+      },
+    ],
+    "recentActivity": [
+      {
+        "action": "string",
+        "id": "string",
+        "timestamp": "string",
+        "type": "string",
+        "user": "string",
+      },
+    ],
+    "sourceDistribution": [
+      {
+        "count": "number",
+        "percentage": "number",
+        "source": "string",
+      },
+    ],
+    "stageDistribution": [
+      {
+        "count": "number",
+        "stage": "string",
+      },
+    ],
+    "stageTrend": [
+      {
+        "Contacted": "number",
+        "Enrolled": "number",
+        "New Inquiry": "number",
+        "Trial Class": "number",
+        "month": "string",
+      },
+    ],
+    "stats": {
+      "activeBDMs": {
+        "change": "number",
+        "value": "number",
+      },
+      "conversionRate": {
+        "change": "number",
+        "value": "string",
+      },
+      "followupPending": {
+        "change": "number",
+        "value": "number",
+      },
+      "todaysConverted": {
+        "change": "number",
+        "value": "number",
+      },
+      "todaysLead": {
+        "change": "number",
+        "value": "number",
+      },
+      "totalLeads": {
+        "change": "number",
+        "value": "number",
+      },
+      "totalUsers": {
+        "change": "number",
+        "value": "number",
+      },
+    },
+    "statusDistribution": [
+      {
+        "color": "string",
+        "count": "number",
+        "label": "string",
+      },
+    ],
+    "topPerformers": [
+      {
+        "conversionRate": "string",
+        "convertedLeads": "number",
+        "id": "string",
+        "name": "string",
+        "rank": "number",
+        "totalLeads": "number",
+      },
+    ],
+  },
+  "success": "boolean",
+}
+`;
+
+exports[`Admin dashboard /admin/recent-activity keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "action": "string",
+      "id": "string",
+      "timestamp": "string",
+      "type": "string",
+      "user": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`Admin dashboard /admin/stats keeps its response shape 1`] = `
+{
+  "data": {
+    "activeBDMs": {
+      "change": "number",
+      "value": "number",
+    },
+    "conversionRate": {
+      "change": "number",
+      "value": "string",
+    },
+    "totalLeads": {
+      "change": "number",
+      "value": "number",
+    },
+    "totalUsers": {
+      "change": "number",
+      "value": "number",
+    },
+  },
+  "success": "boolean",
+}
+`;
+
+exports[`Admin dashboard /admin/top-performers keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "conversionRate": "string",
+      "convertedLeads": "number",
+      "id": "string",
+      "name": "string",
+      "rank": "number",
+      "totalLeads": "number",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /bdm/all keeps its response shape 1`] = `
+{
+  "data": {
+    "conversionTrend": [
+      {
+        "month": "string",
+        "rate": "number",
+      },
+    ],
+    "coursePerformance": [
+      {
+        "color": "string",
+        "count": "number",
+        "label": "string",
+      },
+    ],
+    "recentLeads": [
+      {
+        "createdAt": "string",
+        "id": "string",
+        "name": "string",
+        "phone": "string",
+        "service": [],
+        "stage": "string",
+      },
+    ],
+    "sourceDistribution": [
+      {
+        "color": "string",
+        "count": "number",
+        "percentage": "number",
+        "source": "string",
+      },
+    ],
+    "stageDistribution": [
+      {
+        "count": "number",
+        "ieltsCount": "number",
+        "pteCount": "number",
+        "stage": "string",
+      },
+    ],
+    "stageTrend": [
+      {
+        "Contacted": "number",
+        "Enrolled": "number",
+        "Lost": "number",
+        "New Inquiry": "number",
+        "Trial Class": "number",
+        "month": "string",
+      },
+    ],
+    "stats": {
+      "converted": {
+        "change": "number",
+        "value": "number",
+      },
+      "followupPending": {
+        "change": "number",
+        "value": "number",
+      },
+      "inProcess": {
+        "change": "number",
+        "value": "number",
+      },
+      "todaysLead": {
+        "change": "number",
+        "value": "number",
+      },
+    },
+    "upcomingTasks": [
+      {
+        "dueDate": "string",
+        "entityType": "string",
+        "id": "string",
+        "leadId": "string",
+        "leadName": "string",
+        "leadPhone": "string",
+        "priority": "string",
+        "serviceInterest": "string",
+        "title": "string",
+      },
+    ],
+  },
+  "success": "boolean",
+  "version": "string",
+}
+`;
+
+exports[`BDM dashboard /bdm/recent-leads keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "createdAt": "string",
+      "id": "string",
+      "name": "string",
+      "phone": "string",
+      "service": [],
+      "stage": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /bdm/upcoming-tasks keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "dueDate": "string",
+      "entityType": "string",
+      "id": "string",
+      "priority": "string",
+      "title": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /conversion-rate-trend keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "month": "string",
+      "rate": "number",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /lead-source-distribution keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "count": "number",
+      "percentage": "number",
+      "source": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /lead-stage-distribution keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "count": "number",
+      "stage": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /lead-stage-trend keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "Contacted": "number",
+      "Enrolled": "number",
+      "New Inquiry": "number",
+      "Trial Class": "number",
+      "month": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard /status-distribution keeps its response shape 1`] = `
+{
+  "data": [
+    {
+      "color": "string",
+      "count": "number",
+      "label": "string",
+    },
+  ],
+  "success": "boolean",
+}
+`;
+
+exports[`BDM dashboard stage distribution counts every stage 1`] = `"[{"stage":"New Inquiry","count":1},{"stage":"Contacted","count":1},{"stage":"Trial Class","count":1},{"stage":"Enrolled","count":1},{"stage":"Lost","count":1}]"`;
