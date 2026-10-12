@@ -1,4 +1,5 @@
 import { found } from '../../core/errors';
+import { conversionRate } from '../../shared/utils/conversionRate';
 import { createAndEmitNotification } from '../notifications/notification.service';
 import { leadRepository } from '../leads/lead.repository';
 import { userRepository } from './user.repository';
@@ -74,12 +75,10 @@ export const userService = {
   async getStats(userId: unknown) {
     const totalLeads = await leadRepository.countByAssignee(userId);
     const convertedLeads = await leadRepository.countByAssignee(userId, { lifecycleStage: 'Enrolled' });
-    const conversionRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : '0';
-
     return {
       totalLeads,
       converted: convertedLeads,
-      conversionRate: `${conversionRate}%`,
+      conversionRate: `${conversionRate(convertedLeads, totalLeads)}%`,
     };
   },
 };

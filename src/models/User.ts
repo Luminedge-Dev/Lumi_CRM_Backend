@@ -81,6 +81,7 @@ const UserSchema = new Schema<IUser>(
   {
     timestamps: true,
     toJSON: { transform: stripSensitiveAuthFields },
+    toObject: { transform: stripSensitiveAuthFields },
   }
 );
 

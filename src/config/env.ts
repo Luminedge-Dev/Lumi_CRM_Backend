@@ -1,8 +1,30 @@
 import dotenv from 'dotenv';
 
+// Names already set by the real environment (hosting platform, shell, test setup) before backend/.env
+// is read. Lets the startup database guard tell platform-provided values from ones a local file filled in.
+const PRESET_ENV_NAMES = new Set(Object.keys(process.env));
+
 // Loads backend/.env (dotenv never overrides a variable that is already set, so the test setup and
 // the hosting platform's real environment always win).
-dotenv.config();
+const ENV_FILE_VALUES: Record<string, string> = dotenv.config().parsed ?? {};
+
+/** True when the variable's current value was filled in from a local .env file, not the real environment. */
+const fromEnvFile = (name: string): boolean =>
+  !PRESET_ENV_NAMES.has(name) && ENV_FILE_VALUES[name] !== undefined && process.env[name] === ENV_FILE_VALUES[name];
+
+const nonEmpty = (value: string): boolean => value.trim() !== '';
+
+// Variables only a hosting runtime sets. Render documents RENDER as always "true". Vercel exposes its
+// system variables when the project allows it, and its functions run on AWS Lambda, which sets
+// AWS_LAMBDA_FUNCTION_NAME; several are accepted so one disabled setting cannot break a deployment.
+const DEPLOYMENT_MARKERS: ReadonlyArray<[name: string, matches: (value: string) => boolean]> = [
+  ['RENDER', (v) => v === 'true'],
+  ['VERCEL', (v) => v === '1'],
+  ['VERCEL_ENV', nonEmpty],
+  ['VERCEL_REGION', nonEmpty],
+  ['VERCEL_URL', nonEmpty],
+  ['AWS_LAMBDA_FUNCTION_NAME', nonEmpty],
+];
 
 // Every runtime read of process.env goes through this object. Values are read lazily (getters)
 // so tests and platforms that set variables after import keep working. Secret values are never
@@ -40,6 +62,14 @@ export const config = {
         throw new Error('MONGODB_URI environment variable is not set');
       }
       return 'mongodb://localhost:27017/crm_luminedge';
+    },
+    /** MONGODB_URI exactly as configured (undefined when unset/empty): no fallback. Read by the startup guard. */
+    get configuredUri(): string | undefined {
+      return str('MONGODB_URI');
+    },
+    /** ALLOW_REMOTE_DATABASE=true lets a non-production process use a remote MONGODB_URI (e.g. Atlas). */
+    get allowRemoteInDev(): boolean {
+      return process.env.ALLOW_REMOTE_DATABASE === 'true';
     },
   },
 
@@ -105,8 +135,34 @@ export const config = {
     },
   },
 
+  schedules: {
+    /** Bearer token for luminedge-server's own `/admin/get-schedules` (a separate system; its own staff-role JWT). */
+    get luminedgeToken(): string | undefined {
+      return str('LUMINEDGE_SCHEDULES_TOKEN');
+    },
+  },
+
   get renderExternalUrl(): string | undefined {
     return str('RENDER_EXTERNAL_URL');
+  },
+
+  /** Evidence about where this process runs, for the startup database guard. Names only, never values. */
+  deployment: {
+    /** Vercel and Render run Linux; a Windows or macOS process is a local one. */
+    get platform(): string {
+      return process.platform;
+    },
+    /** Hosting-runtime markers present in the real environment (a marker read from a .env file does not count). */
+    get markers(): string[] {
+      return DEPLOYMENT_MARKERS.filter(([name, matches]) => {
+        const value = process.env[name];
+        return value !== undefined && matches(value) && !fromEnvFile(name);
+      }).map(([name]) => name);
+    },
+    /** Which of NODE_ENV / MONGODB_URI came from a local .env file (deployed runtimes never ship one). */
+    get envFileVars(): string[] {
+      return ['NODE_ENV', 'MONGODB_URI'].filter(fromEnvFile);
+    },
   },
 };
 
@@ -124,6 +180,7 @@ const RECOMMENDED_PRODUCTION_VARS: ReadonlyArray<[name: string, effect: string]>
   ['SMTP_FROM', 'emails are sent from the default sender address'],
   ['GOOGLE_CLIENT_ID', 'Google sign-in is refused'],
   ['BLOB_READ_WRITE_TOKEN', 'document uploads are refused'],
+  ['LUMINEDGE_SCHEDULES_TOKEN', 'exam slots fall back to our own DB-backed mock test schedules'],
 ];
 
 /** Logs a warning (the name, never a value) per missing production variable. A no-op outside production. */

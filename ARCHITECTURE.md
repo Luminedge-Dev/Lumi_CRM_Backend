@@ -1,6 +1,6 @@
 # Backend architecture
 
-```
+```text
 HTTP request
   -> Route          (path, method, middleware, controller: nothing else)
   -> Middleware     (authentication, role authorization, sanitising, rate limiting, uploads)
@@ -17,7 +17,7 @@ transport, or an import cycle appears).
 
 ## Layout
 
-```
+```text
 api/index.ts          Vercel entry: exports the Express app from src/app.ts
 src/app.ts            builds the Express app (shared by Vercel and Render)
 src/server.ts         Render/Node entry: connect DB, start sockets and jobs, listen

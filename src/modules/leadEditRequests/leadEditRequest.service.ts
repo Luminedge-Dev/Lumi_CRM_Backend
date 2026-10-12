@@ -1,4 +1,4 @@
-import { AppError } from '../../core/errors';
+import { AppError, found } from '../../core/errors';
 import { LEAD_STAGES } from '../../shared/constants/leadStages';
 import { createAndEmitNotification, createAndEmitToAdmins } from '../notifications/notification.service';
 import type { ILeadEditRequest } from '../../models/LeadEditRequest';
@@ -20,10 +20,7 @@ const normalizeServiceInterest = (value: unknown): string[] => {
   return single ? [single] : [];
 };
 
-/**
- * Converts an approved request payload into a lead update. Validation failures here are plain
- * Errors on purpose: the endpoint has always answered them with its generic 500 message.
- */
+/** Converts an approved request payload into a lead update. Validation failures throw AppError.badRequest. */
 const buildLeadUpdateData = async (leadId: string, payload: Record<string, any>) => {
   const updateData: Record<string, any> = {};
 
@@ -37,7 +34,7 @@ const buildLeadUpdateData = async (leadId: string, payload: Record<string, any>)
   if (payload.phone !== undefined) {
     const phone = safeString(payload.phone);
     if (phone && (await leadService.isPhoneTaken(phone, leadId))) {
-      throw new Error('This number already exists. Already used, try with another number.');
+      throw AppError.badRequest('This number already exists. Already used, try with another number.');
     }
     if (phone) updateData.phone = phone;
   }
@@ -57,7 +54,7 @@ const buildLeadUpdateData = async (leadId: string, payload: Record<string, any>)
   if (payload.lifecycleStage !== undefined) {
     const stage = safeString(payload.lifecycleStage);
     if (!LEAD_STAGES.includes(stage as (typeof LEAD_STAGES)[number])) {
-      throw new Error('Invalid lifecycle stage');
+      throw AppError.badRequest('Invalid lifecycle stage');
     }
     updateData.lifecycleStage = stage;
   }
@@ -102,8 +99,7 @@ export const summarizeRequest = (request: ILeadEditRequest): string => {
 
 export const leadEditRequestService = {
   async createRequest(actor: EditRequestActor, { leadId, section, payload, note }: CreateEditRequestInput) {
-    const lead: any = await leadRepository.findForEditRequest(leadId);
-    if (!lead) throw AppError.notFound('Lead not found');
+    const lead: any = found(await leadRepository.findForEditRequest(leadId), 'Lead not found');
 
     // Ownership rule: a BDM may only file requests for a lead assigned to them.
     if (actor.role !== 'admin') {
@@ -152,8 +148,7 @@ export const leadEditRequestService = {
   },
 
   async review(requestId: string, decision: ReviewDecision, actor: EditRequestActor, reviewNote: unknown) {
-    const requestDoc = await leadEditRequestRepository.findById(requestId);
-    if (!requestDoc) throw AppError.notFound('Request not found');
+    const requestDoc = found(await leadEditRequestRepository.findById(requestId), 'Request not found');
     if (requestDoc.status !== 'pending') throw AppError.badRequest('Request has already been reviewed');
 
     const reviewer = actor.userId ? await userRepository.findNameAndRoleById(actor.userId) : null;
@@ -166,16 +161,14 @@ export const leadEditRequestService = {
         const followUp = buildFollowUpPayload(payload);
         if (!followUp.note) throw AppError.badRequest('Follow-up note is required');
 
-        const updatedLead = await leadRepository.pushFollowUp(leadId, followUp);
-        if (!updatedLead) throw AppError.notFound('Lead not found');
+        found(await leadRepository.pushFollowUp(leadId, followUp), 'Lead not found');
       } else {
         const updateData = await buildLeadUpdateData(leadId, payload);
         if (Object.keys(updateData).length === 0) {
           throw AppError.badRequest('No updatable fields found in request payload');
         }
 
-        const updatedLead = await leadRepository.updateById(leadId, updateData);
-        if (!updatedLead) throw AppError.notFound('Lead not found');
+        found(await leadRepository.updateById(leadId, updateData), 'Lead not found');
       }
     }
 

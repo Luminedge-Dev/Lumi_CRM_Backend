@@ -95,4 +95,17 @@ export const dashboardRepository = {
       { $project: { stage: '$lifecycleStage', monthKey: { $dateToString: { format: '%Y-%m', date: '$updatedAt' } } } },
       { $group: { _id: { monthKey: '$monthKey', stage: '$stage' }, count: { $sum: 1 } } },
     ]),
+
+  /** Total and converted lead counts per assignee, in one query instead of two counts per BDM. */
+  aggregateLeadCountsByAssignee: (assigneeIds: unknown[]) =>
+    Lead.aggregate([
+      { $match: { assignedTo: { $in: assigneeIds } } },
+      {
+        $group: {
+          _id: '$assignedTo',
+          totalLeads: { $sum: 1 },
+          convertedLeads: { $sum: { $cond: [{ $eq: ['$lifecycleStage', 'Enrolled'] }, 1, 0] } },
+        },
+      },
+    ]),
 };

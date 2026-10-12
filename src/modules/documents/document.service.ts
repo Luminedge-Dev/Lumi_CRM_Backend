@@ -1,4 +1,4 @@
-import { AppError } from '../../core/errors';
+import { AppError, found } from '../../core/errors';
 import { storeUploadedFile } from '../../integrations/storage/fileStorage';
 import { applicationRepository } from '../applications/application.repository';
 import { studentRepository } from '../students/student.repository';
@@ -72,8 +72,6 @@ export const documentService = {
   },
 
   async review(id: string, status: string, reviewNote: string | undefined, reviewedBy: string) {
-    const doc = await documentRepository.review(id, { status, reviewNote, reviewedBy });
-    if (!doc) throw AppError.notFound('Document not found');
-    return doc;
+    return found(await documentRepository.review(id, { status, reviewNote, reviewedBy }), 'Document not found');
   },
 };

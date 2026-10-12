@@ -131,7 +131,11 @@ const StudentSchema = new Schema<IStudent>(
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
-  { timestamps: true, toJSON: { transform: stripSensitiveAuthFields } }
+  {
+    timestamps: true,
+    toJSON: { transform: stripSensitiveAuthFields },
+    toObject: { transform: stripSensitiveAuthFields },
+  }
 );
 
 export default mongoose.model<IStudent>('Student', StudentSchema);

@@ -3,17 +3,12 @@
 // Every script calls assertScriptSafe() right before it connects. Nothing here connects to a
 // database, and the connection string is never printed.
 
+import { isLocalMongoUri } from '../shared/utils/mongoUri';
+
+// Shared with the API's startup database guard; re-exported so existing imports keep working.
+export { isLocalMongoUri };
+
 export const CONFIRM_PRODUCTION_FLAG = '--confirm-production';
-
-// Exactly the loopback hosts. 0.0.0.0 is deliberately absent (it is not a loopback address).
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
-/** Host part of one URI host entry: drops the port and the brackets around an IPv6 literal ("[::1]:27017" -> "::1"). */
-const normalizeHost = (entry: string): string => {
-  const h = entry.trim().toLowerCase();
-  const bracketed = /^\[([^\]]*)\](?::\d+)?$/.exec(h);
-  return bracketed ? bracketed[1] : h.replace(/:\d+$/, '');
-};
 
 export interface ScriptSafetyInput {
   /** The connection string the script is about to use (may be undefined if the env var is unset). */
@@ -28,16 +23,6 @@ export interface ScriptSafetyResult {
   allowed: boolean;
   reason: string;
 }
-
-/** True only when every host in the URI is a loopback address. An unparseable URI counts as NOT local. */
-export const isLocalMongoUri = (uri: string | undefined): boolean => {
-  if (!uri) return false;
-  const match = /^mongodb(?:\+srv)?:\/\/(?:[^@/]*@)?([^/?]+)/i.exec(uri.trim());
-  if (!match) return false;
-  if (/^mongodb\+srv:/i.test(uri.trim())) return false; // SRV hosts are always remote clusters
-  const hosts = match[1].split(',').map(normalizeHost);
-  return hosts.length > 0 && hosts.every((h) => LOCAL_HOSTS.has(h));
-};
 
 export const evaluateScriptSafety = ({ uri, nodeEnv, argv, writes }: ScriptSafetyInput): ScriptSafetyResult => {
   if (!writes) return { allowed: true, reason: 'dry run: read-only' };

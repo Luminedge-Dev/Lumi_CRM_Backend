@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { AppError } from '../../core/errors';
+import { AppError, found } from '../../core/errors';
 import { isStaffRole, STAFF_ROLES, toStaffRole } from '../../shared/constants/roles';
 import { BCRYPT_ROUNDS, RESET_TOKEN_TTL_MS, INACTIVE_MESSAGE } from '../../shared/constants/auth';
 import { sha256 } from '../../shared/utils/crypto';
@@ -67,7 +67,8 @@ export const authService = {
     const payload = await verifyGoogleAccessToken(googleToken);
     if (!payload?.email) throw AppError.badRequest('Invalid Google token');
 
-    const { email, name, picture } = payload;
+    const { name, picture } = payload;
+    const email = payload.email.toLowerCase();
     const role = (requestedRole as string) || 'bdm';
     if (!isStaffRole(role)) throw AppError.badRequest(`Invalid role. Allowed: ${STAFF_ROLES.join(', ')}`);
 
@@ -175,8 +176,7 @@ export const authService = {
   },
 
   async changePassword(userId: unknown, currentPassword: string, newPassword: string): Promise<void> {
-    const user = await userRepository.findById(userId);
-    if (!user) throw AppError.notFound('User not found');
+    const user = found(await userRepository.findById(userId), 'User not found');
 
     // Google-only accounts have no password to change.
     if (!user.passwordHash) {

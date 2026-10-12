@@ -1,4 +1,4 @@
-import { AppError } from '../../core/errors';
+import { AppError, found } from '../../core/errors';
 import { LEAD_STAGES } from '../../shared/constants/leadStages';
 import { getDhakaDayBounds } from '../../shared/utils/date';
 import {
@@ -96,8 +96,7 @@ export const leadService = {
   },
 
   async getLead(id: string) {
-    const lead = await leadRepository.findByIdWithAssignee(id);
-    if (!lead) throw AppError.notFound('Lead not found');
+    const lead = found(await leadRepository.findByIdWithAssignee(id), 'Lead not found');
     return sortFollowUpsDesc(lead.toObject());
   },
 
@@ -169,30 +168,29 @@ export const leadService = {
     } catch (err) {
       return rethrowDuplicateAsConflict(err);
     }
-    if (!lead) throw AppError.notFound('Lead not found');
-    return lead;
+    return found(lead, 'Lead not found');
   },
 
   async deleteLead(id: string): Promise<void> {
-    const lead = await leadRepository.deleteById(id);
-    if (!lead) throw AppError.notFound('Lead not found');
+    found(await leadRepository.deleteById(id), 'Lead not found');
   },
 
   async addFollowUp(id: string, input: { date?: any; note?: any; nextFollowUpDate?: any }) {
     const { date, note, nextFollowUpDate } = input;
-    const lead = await leadRepository.pushFollowUp(id, {
-      date: date ? new Date(date) : undefined,
-      note,
-      nextFollowUpDate: nextFollowUpDate ? new Date(nextFollowUpDate) : undefined,
-      createdAt: new Date(),
-    });
-    if (!lead) throw AppError.notFound('Lead not found');
+    const lead = found(
+      await leadRepository.pushFollowUp(id, {
+        date: date ? new Date(date) : undefined,
+        note,
+        nextFollowUpDate: nextFollowUpDate ? new Date(nextFollowUpDate) : undefined,
+        createdAt: new Date(),
+      }),
+      'Lead not found',
+    );
     return sortFollowUpsDesc(lead.toObject());
   },
 
   async updateStage(id: string, lifecycleStage: string, actor: LeadActor) {
-    const lead = await leadRepository.setStage(id, lifecycleStage);
-    if (!lead) throw AppError.notFound('Lead not found');
+    const lead = found(await leadRepository.setStage(id, lifecycleStage), 'Lead not found');
 
     // Notify admins and the other BDMs; failures never fail the request.
     try {
@@ -368,8 +366,7 @@ export const leadService = {
       return { message: `Unassigned ${result.modifiedCount} lead(s)`, modifiedCount: result.modifiedCount };
     }
 
-    const bdm = await userRepository.findById(bdmId);
-    if (!bdm) throw AppError.notFound('BDM not found');
+    const bdm = found(await userRepository.findById(bdmId), 'BDM not found');
 
     const result = await leadRepository.assignMany(leadIds, bdmId);
 

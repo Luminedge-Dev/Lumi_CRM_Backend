@@ -1,4 +1,5 @@
 import { LEAD_STAGES } from '../../shared/constants/leadStages';
+import { conversionRate } from '../../shared/utils/conversionRate';
 import { dashboardRepository as repo } from './dashboard.repository';
 import {
   COURSE_COLORS,
@@ -70,21 +71,21 @@ const toActivityItem = (lead: any) => {
 const buildTopPerformers = async (limit: number) => {
   const bdms = await repo.findActiveBdms();
 
-  const performersData = await Promise.all(
-    bdms.map(async (bdm) => {
-      const [totalLeads, convertedLeads] = await Promise.all([
-        repo.countLeads({ assignedTo: bdm._id }),
-        repo.countLeads({ assignedTo: bdm._id, lifecycleStage: 'Enrolled' }),
-      ]);
-      return {
-        id: bdm._id,
-        name: bdm.name,
-        totalLeads,
-        convertedLeads,
-        conversionRate: totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : '0',
-      };
-    }),
+  const counts = await repo.aggregateLeadCountsByAssignee(bdms.map((bdm) => bdm._id));
+  const countsByBdmId = new Map(
+    counts.map((row) => [String(row._id), { totalLeads: row.totalLeads as number, convertedLeads: row.convertedLeads as number }]),
   );
+
+  const performersData = bdms.map((bdm) => {
+    const { totalLeads, convertedLeads } = countsByBdmId.get(String(bdm._id)) || { totalLeads: 0, convertedLeads: 0 };
+    return {
+      id: bdm._id,
+      name: bdm.name,
+      totalLeads,
+      convertedLeads,
+      conversionRate: conversionRate(convertedLeads, totalLeads),
+    };
+  });
 
   return performersData
     .sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))
@@ -240,9 +241,9 @@ export const dashboardService = {
       repo.countLeads({ lifecycleStage: 'Enrolled', createdAt: { $lt: thirtyDaysAgo } }),
     ]);
 
-    const conversionRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : '0';
+    const conversionRateStr = conversionRate(convertedLeads, totalLeads);
     const prevConversionRate = prevTotalLeads > 0 ? (prevConverted / prevTotalLeads) * 100 : 0;
-    const currentConversionRate = parseFloat(conversionRate);
+    const currentConversionRate = parseFloat(conversionRateStr);
     const conversionChange =
       prevConversionRate > 0
         ? Math.round(((currentConversionRate - prevConversionRate) / prevConversionRate) * 100)
@@ -252,7 +253,7 @@ export const dashboardService = {
       activeBDMs: { value: activeBDMs, change: change(currentBDMs, previousBDMs) },
       totalUsers: { value: totalUsers, change: change(currentUsers, previousUsers) },
       totalLeads: { value: totalLeads, change: change(currentLeads, previousLeads) },
-      conversionRate: { value: `${conversionRate}%`, change: conversionChange },
+      conversionRate: { value: `${conversionRateStr}%`, change: conversionChange },
     };
   },
 
@@ -481,7 +482,7 @@ export const dashboardService = {
           repo.countTasks({ status: { $ne: 'completed' }, dueDate: { $gte: startOfToday, $lte: endOfToday } }),
           repo.countTasks({ status: { $ne: 'completed' }, dueDate: { $gte: startOfYesterday, $lt: startOfToday } }),
         ]);
-        const convRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : '0';
+        const convRate = conversionRate(convertedLeads, totalLeads);
         const prevConvRate = prevTotalLeads > 0 ? (prevConverted / prevTotalLeads) * 100 : 0;
         return {
           activeBDMs: { value: activeBDMs, change: change(currentBDMs, previousBDMs) },
