@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
 
-// Names already set by the real environment (hosting platform, shell, test setup) before backend/.env
-// is read. Lets the startup database guard tell platform-provided values from ones a local file filled in.
+// Names already set by the real environment (hosting platform, shell, test setup) before
+// backend/.env.production.local is read. Lets the startup database guard tell platform-provided
+// values from ones a local file filled in.
 const PRESET_ENV_NAMES = new Set(Object.keys(process.env));
 
-// Loads backend/.env (dotenv never overrides a variable that is already set, so the test setup and
-// the hosting platform's real environment always win).
-const ENV_FILE_VALUES: Record<string, string> = dotenv.config().parsed ?? {};
+// Loads backend/.env.production.local, the single local config file (dotenv never overrides a
+// variable that is already set, so NODE_ENV set at the shell - see package.json's "dev" script -
+// test setup, and the hosting platform's real environment always win over whatever this file says).
+const ENV_FILE_VALUES: Record<string, string> = dotenv.config({ path: '.env.production.local' }).parsed ?? {};
 
 /** True when the variable's current value was filled in from a local .env file, not the real environment. */
 const fromEnvFile = (name: string): boolean =>
