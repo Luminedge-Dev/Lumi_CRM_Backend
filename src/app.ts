@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
-import { assertRequiredConfig, corsOptions } from './config';
+import { assertRequiredConfig, corsOptions, warnMissingProductionConfig } from './config';
 
 // Modules (each owns its routes, controller, service and repository)
 import authRoutes from './modules/auth/auth.routes';
@@ -44,6 +44,7 @@ import { sanitizeInput } from './middleware/security/sanitizeInput.middleware';
 
 // Fail fast when a required secret is missing (also covers serverless cold starts, which never run server.ts).
 assertRequiredConfig();
+warnMissingProductionConfig();
 
 const app = express();
 
