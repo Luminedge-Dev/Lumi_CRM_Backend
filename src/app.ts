@@ -58,6 +58,20 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+// Normalise /api prefix: if client or reverse proxy omits /api, route internally to /api
+app.use((req, _res, next) => {
+  if (
+    !req.url.startsWith('/api/') &&
+    req.url !== '/api' &&
+    !req.url.startsWith('/socket.io') &&
+    !req.url.startsWith('/uploads')
+  ) {
+    req.url = `/api${req.url}`;
+    delete (req as any)._parsedUrl;
+  }
+  next();
+});
+
 // Health check: placed before the rate limiter and DB middleware so Render's probe always gets a
 // fast 200 even during cold start or DB reconnection.
 app.get('/api/health', (_req: Request, res: Response) => {
