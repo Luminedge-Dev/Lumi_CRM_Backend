@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest"
   },
-  "author": "Programming Hero",
+  "author": "Luminedge",
   "license": "ISC",
   "dependencies": {
     "@types/express-rate-limit": "^5.1.3",
