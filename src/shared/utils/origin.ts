@@ -11,6 +11,22 @@ export const isLocalOrigin = (origin: string): boolean => {
   }
 }
 
+const matchesPattern = (origin: string, pattern: string): boolean => {
+  const normPattern = normalizeOrigin(pattern)
+  if (normPattern === origin) return true
+  if (normPattern.includes('*')) {
+    const regexPattern =
+      '^' +
+      normPattern
+        .split('*')
+        .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*') +
+      '$'
+    return new RegExp(regexPattern, 'i').test(origin)
+  }
+  return false
+}
+
 /**
  * `allowLocal` trusts any localhost origin (development convenience). It must be false in
  * production: there, a localhost origin is only accepted if it is explicitly configured.
@@ -26,9 +42,19 @@ export const isAllowedOrigin = (
   const normalizedOrigin = normalizeOrigin(origin)
   const configuredFrontend = frontendUrl?.trim()
 
-  return (
-    allowedOrigins.has(normalizedOrigin) ||
-    (configuredFrontend ? normalizeOrigin(configuredFrontend) === normalizedOrigin : false) ||
-    (allowLocal && isLocalOrigin(normalizedOrigin))
-  )
+  if (configuredFrontend && matchesPattern(normalizedOrigin, configuredFrontend)) {
+    return true
+  }
+
+  if (allowLocal && isLocalOrigin(normalizedOrigin)) {
+    return true
+  }
+
+  for (const allowed of allowedOrigins) {
+    if (matchesPattern(normalizedOrigin, allowed)) {
+      return true
+    }
+  }
+
+  return false
 }
